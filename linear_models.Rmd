@@ -46,7 +46,7 @@ Star rating for borough?
 
 ```{r}
 nyc_airbnb %>% 
-  ggplot(aes(x = stars, y = price, color = borough)) + 
+  ggplot(aes(x = stars, y = price, color = borough)) +
   geom_point()
 ```
 
@@ -75,6 +75,33 @@ broom::tidy(fit) %>%
   mutate(
     term = str_replace(term, "borough", "Borough: ")
     ) %>% 
-  knitr::kable()
+  knitr::kable(digits = 3)
 ```
+
+## Be in control of factors 
+
+Character var often just get converted to factor variable (see how plot puts them in order; same as in regression fit model)
+
+what if want ref category the most common one? room type?
+
+```{r}
+nyc_airbnb = 
+  nyc_airbnb %>% 
+  mutate(
+    borough = fct_infreq(borough), 
+    room_type = fct_infreq(room_type)
+  )
+
+nyc_airbnb %>% 
+  ggplot(aes(x = stars, y = price, color = borough)
+         ) +
+  geom_point()
+
+fit = lm(price ~ stars + borough, data = nyc_airbnb)
+
+broom::tidy(fit)
+  
+```
+
+
 
