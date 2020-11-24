@@ -103,5 +103,15 @@ broom::tidy(fit)
   
 ```
 
+## Diagnostics 
 
+```{r}
+nyc_airbnb %>% 
+  modelr::add_residuals(fit) %>% 
+  ggplot(aes(x = stars, y = resid)) + 
+  geom_point() + 
+  facet_wrap(. ~ borough)
+  
+```
 
+Outliers??
