@@ -138,3 +138,28 @@ anova(fit_null, fit_alt) %>%
   broom::tidy()
 ```
 
+## Nest data, fit models 
+
+Assoc btw stars and price? Does this differ by borough?
+
+```{r}
+fit = lm(price ~ stars * borough + room_type * borough, data = nyc_airbnb)
+
+broom::tidy(fit)
+```
+
+Something more exploratory
+
+```{r}
+nyc_airbnb %>% 
+  nest(data = -borough) %>% 
+  mutate(
+    models = map(.x = data, ~lm(price ~ stars, data = .x)),
+    results = map(models, broom::tidy)
+  ) %>% 
+  select(-data, -models) %>% 
+  unnest(results)
+```
+
+
+

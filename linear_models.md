@@ -5,7 +5,7 @@ Linear Models
 library(tidyverse)
 ```
 
-    ## -- Attaching packages ---------- tidyverse 1.3.0 --
+    ## -- Attaching packages --------
 
     ## v ggplot2 3.3.2     v purrr   0.3.4
     ## v tibble  3.0.3     v dplyr   1.0.2
@@ -14,7 +14,7 @@ library(tidyverse)
 
     ## Warning: package 'ggplot2' was built under R version 4.0.3
 
-    ## -- Conflicts ------------- tidyverse_conflicts() --
+    ## -- Conflicts -----------------
     ## x dplyr::filter() masks stats::filter()
     ## x dplyr::lag()    masks stats::lag()
 
@@ -198,3 +198,58 @@ anova(fit_null, fit_alt) %>%
     ##    <dbl>       <dbl> <dbl>     <dbl>     <dbl>      <dbl>
     ## 1  30528 1030861841.    NA       NA        NA  NA        
     ## 2  30525 1005601724.     3 25260117.      256.  7.84e-164
+
+## Nest data, fit models
+
+Assoc btw stars and price? Does this differ by borough?
+
+``` r
+fit = lm(price ~ stars * borough + room_type * borough, data = nyc_airbnb)
+
+broom::tidy(fit)
+```
+
+    ## # A tibble: 16 x 5
+    ##    term                                  estimate std.error statistic  p.value
+    ##    <chr>                                    <dbl>     <dbl>     <dbl>    <dbl>
+    ##  1 (Intercept)                              95.7      19.2     4.99   6.13e- 7
+    ##  2 stars                                    27.1       3.96    6.84   8.20e-12
+    ##  3 boroughBrooklyn                         -26.1      25.1    -1.04   2.99e- 1
+    ##  4 boroughQueens                            -4.12     40.7    -0.101  9.19e- 1
+    ##  5 boroughBronx                             -5.63     77.8    -0.0723 9.42e- 1
+    ##  6 room_typePrivate room                  -124.        3.00  -41.5    0.      
+    ##  7 room_typeShared room                   -154.        8.69  -17.7    1.42e-69
+    ##  8 stars:boroughBrooklyn                    -6.14      5.24   -1.17   2.41e- 1
+    ##  9 stars:boroughQueens                     -17.5       8.54   -2.04   4.09e- 2
+    ## 10 stars:boroughBronx                      -22.7      17.1    -1.33   1.85e- 1
+    ## 11 boroughBrooklyn:room_typePrivate room    32.0       4.33    7.39   1.55e-13
+    ## 12 boroughQueens:room_typePrivate room      54.9       7.46    7.37   1.81e-13
+    ## 13 boroughBronx:room_typePrivate room       71.3      18.0     3.96   7.54e- 5
+    ## 14 boroughBrooklyn:room_typeShared room     47.8      13.9     3.44   5.83e- 4
+    ## 15 boroughQueens:room_typeShared room       58.7      17.9     3.28   1.05e- 3
+    ## 16 boroughBronx:room_typeShared room        83.1      42.5     1.96   5.03e- 2
+
+Something more exploratory
+
+``` r
+nyc_airbnb %>% 
+  nest(data = -borough) %>% 
+  mutate(
+    models = map(.x = data, ~lm(price ~ stars, data = .x)),
+    results = map(models, broom::tidy)
+  ) %>% 
+  select(-data, -models) %>% 
+  unnest(results)
+```
+
+    ## # A tibble: 8 x 6
+    ##   borough   term        estimate std.error statistic  p.value
+    ##   <fct>     <chr>          <dbl>     <dbl>     <dbl>    <dbl>
+    ## 1 Bronx     (Intercept)    49.9      18.3      2.72  6.71e- 3
+    ## 2 Bronx     stars           4.91      4.10     1.20  2.31e- 1
+    ## 3 Queens    (Intercept)    18.1      26.3      0.688 4.92e- 1
+    ## 4 Queens    stars          15.8       5.63     2.81  5.06e- 3
+    ## 5 Brooklyn  (Intercept)   -11.3      14.5     -0.784 4.33e- 1
+    ## 6 Brooklyn  stars          28.0       3.10     9.02  2.13e-19
+    ## 7 Manhattan (Intercept)   -34.3      22.9     -1.50  1.35e- 1
+    ## 8 Manhattan stars          43.3       4.78     9.07  1.39e-19
