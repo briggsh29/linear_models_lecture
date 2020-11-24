@@ -5,7 +5,7 @@ Linear Models
 library(tidyverse)
 ```
 
-    ## -- Attaching packages --------
+    ## -- Attaching packages ---------- tidyverse 1.3.0 --
 
     ## v ggplot2 3.3.2     v purrr   0.3.4
     ## v tibble  3.0.3     v dplyr   1.0.2
@@ -14,7 +14,7 @@ library(tidyverse)
 
     ## Warning: package 'ggplot2' was built under R version 4.0.3
 
-    ## -- Conflicts -----------------
+    ## -- Conflicts ------------- tidyverse_conflicts() --
     ## x dplyr::filter() masks stats::filter()
     ## x dplyr::lag()    masks stats::lag()
 
@@ -158,3 +158,43 @@ nyc_airbnb %>%
 <img src="linear_models_files/figure-gfm/unnamed-chunk-7-1.png" width="90%" />
 
 Outliers??
+
+## Hypothesis Tests
+
+T test by default
+
+``` r
+fit %>% 
+  broom::tidy()
+```
+
+    ## # A tibble: 5 x 5
+    ##   term            estimate std.error statistic   p.value
+    ##   <chr>              <dbl>     <dbl>     <dbl>     <dbl>
+    ## 1 (Intercept)         19.8     12.2       1.63 1.04e-  1
+    ## 2 stars               32.0      2.53     12.7  1.27e- 36
+    ## 3 boroughBrooklyn    -49.8      2.23    -22.3  6.32e-109
+    ## 4 boroughQueens      -77.0      3.73    -20.7  2.58e- 94
+    ## 5 boroughBronx       -90.3      8.57    -10.5  6.64e- 26
+
+``` r
+# hypothesis test on estimates 
+```
+
+ANOVA? Significance of borough?
+
+``` r
+fit_null = lm(price ~ stars, data = nyc_airbnb)
+# null H, if borough has no affect 
+
+fit_alt = lm(price ~ stars + borough, data = nyc_airbnb)
+
+anova(fit_null, fit_alt) %>% 
+  broom::tidy()
+```
+
+    ## # A tibble: 2 x 6
+    ##   res.df         rss    df     sumsq statistic    p.value
+    ##    <dbl>       <dbl> <dbl>     <dbl>     <dbl>      <dbl>
+    ## 1  30528 1030861841.    NA       NA        NA  NA        
+    ## 2  30525 1005601724.     3 25260117.      256.  7.84e-164

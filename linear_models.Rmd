@@ -115,3 +115,26 @@ nyc_airbnb %>%
 ```
 
 Outliers??
+
+## Hypothesis Tests
+
+T test by default 
+
+```{r}
+fit %>% 
+  broom::tidy()
+# hypothesis test on estimates 
+```
+
+ANOVA? Significance of borough?
+
+```{r}
+fit_null = lm(price ~ stars, data = nyc_airbnb)
+# null H, if borough has no affect 
+
+fit_alt = lm(price ~ stars + borough, data = nyc_airbnb)
+
+anova(fit_null, fit_alt) %>% 
+  broom::tidy()
+```
+
